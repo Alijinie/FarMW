@@ -33,13 +33,79 @@
         }
         .text-up { color: #2ecc71; } /* A more pleasant green for 'Up' */
         .text-down { color: #e74c3c; } /* A more pleasant red for 'Down' */
+
+        /* AI Chat Specific Styles */
+        #ai-chat-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1000;
+            width: 90%;
+            max-width: 400px;
+            height: 80%;
+            max-height: 600px;
+            display: none;
+            flex-direction: column;
+        }
+        #chat-header {
+            background-color: #1f2937;
+            border-bottom: 1px solid #374151;
+        }
+        #chat-body {
+            background-color: #1f2937;
+            flex-grow: 1;
+            overflow-y: auto;
+            border-top: 1px solid #374151;
+            padding: 1rem;
+        }
+        .message {
+            margin-bottom: 0.75rem;
+            display: flex;
+        }
+        .user-message {
+            justify-content: flex-end;
+        }
+        .user-message p {
+            background-color: #2563eb;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 1rem 1rem 0 1rem;
+            max-width: 80%;
+        }
+        .ai-message {
+            justify-content: flex-start;
+        }
+        .ai-message p {
+            background-color: #4b5563;
+            color: #d1d5db;
+            padding: 0.5rem 1rem;
+            border-radius: 1rem 1rem 1rem 0;
+            max-width: 80%;
+        }
+        #chat-input-container {
+            background-color: #1f2937;
+            border-top: 1px solid #374151;
+        }
+        .typing-indicator span {
+            animation: bounce 0.8s infinite;
+        }
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-300">
     
     <div class="container mx-auto p-4 sm:p-6 md:p-8">
         <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-green-400">Farm Wise Dashboard 🇳🇬</h1>
+            <h1 class="text-4xl font-bold text-green-400">Farm Wise Dashboard &#127475;&#127468</h1>
             <h1 class="text-green-500 text-sm">West Africa (beta) version</h1>
             <p class="text-lg text-green-400 mt-2">From Nigeria to Global Markets</p>
             <marquee><p class="text-sm text-green-500 mt-1" id="current-date"></p></marquee>
@@ -114,7 +180,7 @@
                             </tbody>
                         </table>
                     </div>
-                     <p class="text-xs text-gray-500 mt-3">*Prices are estimates and subject to change based on carrier, season, and fuel surcharges.</p>
+                   <p class="text-xs text-gray-500 mt-3">*Prices are estimates and subject to change based on carrier, season, and fuel surcharges.</p>
                 </section>
             </div>
 
@@ -159,17 +225,17 @@
                 </section>
                 
                 <section id="weather-map" class="bg-gray-800 p-6 rounded-lg shadow-md">
-                     <h2 class="text-2xl font-semibold text-gray-200 border-b-2 border-green-700 pb-2 mb-4">Live Weather Map</h2>
-                     <h2 class="text-sm text-green-500">*Search for Lagos, Ibadan, Abeokuta, or Akure to view current weather conditions. For other locations, please interact with the map manually.</h2>
-                     <div class="mb-4">
+                    <h2 class="text-2xl font-semibold text-gray-200 border-b-2 border-green-700 pb-2 mb-4">Live Weather Map</h2>
+                    <h2 class="text-sm text-green-500">*Search for Lagos, Ibadan, Abeokuta, or Akure to view current weather conditions. For other locations, please interact with the map manually.</h2>
+                    <div class="mb-4">
                           <div class="flex flex-col sm:flex-row gap-2">
                               <input type="text" id="location-search" placeholder="Enter a city (e.g., Lagos)" class="flex-grow p-2 border border-gray-600 bg-gray-700 text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
                               <button id="search-btn" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">Search</button>
                           </div>
-                     </div>
-                     <div id="weather-map-container" class="rounded-lg overflow-hidden border border-gray-700">
+                    </div>
+                    <div id="weather-map-container" class="rounded-lg overflow-hidden border border-gray-700">
                           <iframe id="windy-map" src="https://embed.windy.com/embed2.html?lat=6.5244&lon=3.3792&detailLat=6.5244&detailLon=3.3792&width=650&height=450&zoom=7&level=surface&overlay=rain&product=ecmwf&menu=&message=true&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1"></iframe>
-                     </div>
+                    </div>
                 </section>
             </div>
         </div>
@@ -179,321 +245,524 @@
         </footer>
     </div>
 
+    <button id="ai-chat-btn" class="fixed bottom-6 right-6 p-4 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 z-50">
+        <i class="fas fa-robot text-2xl"></i>
+    </button>
+    <div id="ai-chat-container" class="bg-gray-800 rounded-lg shadow-2xl overflow-hidden">
+        <div id="chat-header" class="flex justify-between items-center p-4">
+            <h3 class="text-lg font-semibold text-gray-200">FarmWise AI Assistant</h3>
+            <button id="chat-close-btn" class="text-gray-400 hover:text-white">&times;</button>
+        </div>
+        <div id="chat-body" class="p-4 flex-grow overflow-y-auto space-y-4">
+            <div class="ai-message">
+                <p>Hello! I'm your FarmWise AI Assistant. I can answer questions about local crops, prices, and weather in Nigeria. How can I help you today?</p>
+            </div>
+        </div>
+        <div id="chat-input-container" class="p-4 flex items-center gap-2">
+            <input type="text" id="chat-input" placeholder="Ask a question..." class="flex-grow p-2 border border-gray-600 bg-gray-700 text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            <button id="chat-send-btn" class="p-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+    
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    backgroundImage: {
-                        'hero-pattern': "url('/images/NigerianFabric.png')",
-                    }
+    tailwind.config = {
+        theme: {
+            extend: {
+                backgroundImage: {
+                    'hero-pattern': "url('/images/NigerianFabric.png')",
                 }
             }
         }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- DATA OBJECTS ---
+        const cropData = {
+            "Cassava": { planting: "Plant cuttings at the start of the rainy season (April-May). Ensures good root establishment before dry spells.", irrigation: "Drought-tolerant once established, but requires water in the first 3 months. Supplemental irrigation during August break boosts yield.", icon: "🌱" },
+            "Oil Palm": { planting: "Transplant seedlings during the wet season (May-June) for best results. Requires deep, well-drained soil.", irrigation: "Young palms need consistent moisture. Mature palms are rain-fed but irrigation in dry season increases fruit bunch yield significantly.", icon: "🌴" },
+            "Groundnuts": { planting: "Plant between late March and May. Avoid waterlogged soil. Early planting allows for two cycles in a year.", irrigation: "Crucial during flowering and pegging stages. Inconsistent water can lead to empty pods (pops).", icon: "🥜" },
+            "Beans (Cowpea)": { planting: "Can be planted early (Mar-Apr) and late (Aug-Sept). It is a hardy crop adaptable to various planting times.", irrigation: "Generally rain-fed. However, watering during flowering can prevent flower drop and increase pod formation.", icon: "🫘" },
+            "Kola Nut": { planting: "Grown from seeds or cuttings, best planted during the rainy season. It's a tree crop that requires patience.", irrigation: "Young trees need regular watering. Mature trees are mostly rain-fed but benefit from irrigation in harsh dry seasons.", icon: "🌰" },
+            "Tiger Nut": { planting: "Plant tubers from April to June. Thrives in sandy loam soil with good sun exposure.", irrigation: "Requires consistent and abundant water, especially during tuber formation. Drip or furrow irrigation is ideal.", icon: "🌾" }
+        };
+
+        const marketPrices = [
+            { name: "Cassava", price_per_100kg: "₦45,000 - ₦55,000", trend: "Up", avg_price: 50000 },
+            { name: "Palm Fruit", price_per_100kg: "₦60,000 - ₦70,000", trend: "Stable", avg_price: 65000 },
+            { name: "Groundnuts", price_per_100kg: "₦140,000 - ₦160,000", trend: "Up", avg_price: 150000 },
+            { name: "Beans (Oloyin)", price_per_100kg: "₦150,000 - ₦170,000", trend: "Stable", avg_price: 160000 },
+            { name: "Kola Nuts", price_per_100kg: "Varies widely", trend: "Stable", avg_price: 0 },
+            { name: "Tiger Nuts (Dry)", price_per_100kg: "₦200,000 - ₦230,000", trend: "Up", avg_price: 215000 }
+        ];
         
-        document.addEventListener('DOMContentLoaded', function() {
-            // --- DATA OBJECTS ---
-            const cropData = {
-                "Cassava": { planting: "Plant cuttings at the start of the rainy season (April-May). Ensures good root establishment before dry spells.", irrigation: "Drought-tolerant once established, but requires water in the first 3 months. Supplemental irrigation during August break boosts yield.", icon: "🌱" },
-                "Oil Palm": { planting: "Transplant seedlings during the wet season (May-June) for best results. Requires deep, well-drained soil.", irrigation: "Young palms need consistent moisture. Mature palms are rain-fed but irrigation in dry season increases fruit bunch yield significantly.", icon: "🌴" },
-                "Groundnuts": { planting: "Plant between late March and May. Avoid waterlogged soil. Early planting allows for two cycles in a year.", irrigation: "Crucial during flowering and pegging stages. Inconsistent water can lead to empty pods (pops).", icon: "🥜" },
-                "Beans (Cowpea)": { planting: "Can be planted early (Mar-Apr) and late (Aug-Sept). It is a hardy crop adaptable to various planting times.", irrigation: "Generally rain-fed. However, watering during flowering can prevent flower drop and increase pod formation.", icon: "🫘" },
-                "Kola Nut": { planting: "Grown from seeds or cuttings, best planted during the rainy season. It's a tree crop that requires patience.", irrigation: "Young trees need regular watering. Mature trees are mostly rain-fed but benefit from irrigation in harsh dry seasons.", icon: "🌰" },
-                "Tiger Nut": { planting: "Plant tubers from April to June. Thrives in sandy loam soil with good sun exposure.", irrigation: "Requires consistent and abundant water, especially during tuber formation. Drip or furrow irrigation is ideal.", icon: "🌾" }
+        const valueAddedPrices = [
+            { product: "Garri (Ijebu)", source: "Cassava", price: "₦35,000 - ₦40,000", unit: "50kg Bag" },
+            { product: "Fufu Flour", source: "Cassava", price: "₦1,500 - ₦1,800", unit: "1kg" },
+            { product: "Palm Oil", source: "Palm Fruit", price: "₦28,000 - ₦32,000", unit: "25 Litres" },
+            { product: "Palm Kernel Oil", source: "Palm Fruit", price: "₦25,000 - ₦28,000", unit: "25 Litres" },
+            { product: "Groundnut Oil", source: "Groundnuts", price: "₦40,000 - ₦45,000", unit: "25 Litres" },
+            { product: "Kuli-Kuli", source: "Groundnuts", price: "₦1,000 - ₦1,500", unit: "Paint Bucket" },
+            { product: "Bean Flour", source: "Beans", price: "₦2,000 - ₦2,500", unit: "1kg" }
+        ];
+
+        const globalMarketPrices = [
+            { commodity: "Crude Palm Oil", price: "950.00", unit: "per MT (Metric Ton)" },
+            { commodity: "Cocoa", price: "9,850", unit: "per MT (ICE London)" },
+            { commodity: "Groundnuts (Peanuts)", price: "1,900", unit: "per MT (US Runner)" },
+            { commodity: "Corn (Maize)", price: "4.50", unit: "per Bushel (CME)" }
+        ];
+
+        const exportOrgs = [
+            { name: "Nigerian Export Promotion Council (NEPC)", description: "The primary federal agency responsible for promoting the development and diversification of Nigeria's export trade." },
+            { name: "Federation of West African Chambers of Commerce and Industry (FEWACCI)", description: "A regional body that promotes trade, economic cooperation, and regional integration among West African states." },
+            { name: "Cocoa Association of Nigeria (CAN)", description: "Advocates for cocoa farmers and exporters, focusing on quality control, market access, and sustainable practices." },
+            { name: "Oil Palm Growers Association of Nigeria (OPGAN)", description: "Represents the interests of oil palm farmers, supporting them with inputs, training, and market linkages." }
+        ];
+
+        const shippingData = [
+            { port: "Antwerp, Belgium", region: "Europe", cost: "3800-4500", time: "20-30 Days", avg_cost: 4150 },
+            { port: "Rotterdam, Netherlands", region: "Europe", cost: "3800-4600", time: "20-30 Days", avg_cost: 4200 },
+            { port: "Houston, USA", region: "North America", cost: "5500-6500", time: "30-40 Days", avg_cost: 6000 },
+            { port: "Guangzhou, China", region: "Asia", cost: "4200-5000", time: "40-50 Days", avg_cost: 4600 },
+            { port: "Jebel Ali, UAE", region: "Middle East", cost: "3500-4200", time: "25-35 Days", avg_cost: 3850 }
+        ];
+
+
+        // --- DATE & FORECAST ---
+        const dateElement = document.getElementById('current-date');
+        const forecastElement = document.getElementById('forecast-content');
+        const now = new Date();
+        const month = now.getMonth();
+        dateElement.textContent = `Today is ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+
+        let forecastMessage = "";
+        if (month >= 2 && month <= 6) { forecastMessage = "Primary rainy season. Crucial time for planting and crop establishment."; } 
+        else if (month === 7) { forecastMessage = "'August Break'. Rainfall may be lighter. Monitor crop water needs carefully."; } 
+        else if (month >= 8 && month <= 10) { forecastMessage = "Latter rainy season. Good for late-season planting and preparing for harvest."; } 
+        else { forecastMessage = "Dry season. Irrigation is essential. Focus on harvesting, land prep, and irrigated crops."; }
+        forecastElement.innerHTML = `<p class="bg-blue-900 border-l-4 border-blue-500 text-blue-300 p-4 rounded">${forecastMessage}</p>`;
+
+
+        // --- WEATHER MAP ---
+        const searchBtn = document.getElementById('search-btn');
+        const searchInput = document.getElementById('location-search');
+        const mapFrame = document.getElementById('windy-map');
+        const updateMap = (location) => {
+            const locations = {
+                'lagos': {lat: 6.5244, lon: 3.3792},
+                'ibadan': {lat: 7.3776, lon: 3.9470},
+                'abeokuta': {lat: 7.1577, lon: 3.3435},
+                'akure': {lat: 7.2526, lon: 5.1931}
             };
+            const city = location.toLowerCase().trim();
+            if (locations[city]) {
+                const {lat, lon} = locations[city];
+                mapFrame.src = `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&detailLat=${lat}&detailLon=${lon}&width=650&height=450&zoom=8&level=surface&overlay=rain&product=ecmwf&menu=&message=true&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1`;
+            } else {
+                alert("Sorry, only Lagos, Ibadan, Abeokuta, or Akure are supported in this beta, kindly input one of these locations and search for your desired location manually by interacting with the map. Thank you.");
+            }
+        };
+        searchBtn.addEventListener('click', () => updateMap(searchInput.value));
+        searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') updateMap(searchInput.value); });
 
-            const marketPrices = [
-                { name: "Cassava", price_per_100kg: "₦45,000 - ₦55,000", trend: "Up", avg_price: 50000 },
-                { name: "Palm Fruit", price_per_100kg: "₦60,000 - ₦70,000", trend: "Stable", avg_price: 65000 },
-                { name: "Groundnuts", price_per_100kg: "₦140,000 - ₦160,000", trend: "Up", avg_price: 150000 },
-                { name: "Beans (Oloyin)", price_per_100kg: "₦150,000 - ₦170,000", trend: "Stable", avg_price: 160000 },
-                { name: "Kola Nuts", price_per_100kg: "Varies widely", trend: "Stable", avg_price: 0 },
-                { name: "Tiger Nuts (Dry)", price_per_100kg: "₦200,000 - ₦230,000", trend: "Up", avg_price: 215000 }
-            ];
+
+        // --- DYNAMIC CONTENT RENDERERS ---
+        const renderCropCards = () => {
+            const container = document.getElementById('crop-cards-container');
+            container.innerHTML = ''; // Clear existing content
+            for (const cropName in cropData) {
+                const data = cropData[cropName];
+                const card = document.createElement('div');
+                card.className = "bg-gray-800 p-6 rounded-lg shadow-md transition-transform duration-300 card-hover";
+                card.innerHTML = `
+                    <h3 class="text-xl font-bold text-green-400 mb-3 flex items-center"><span class="text-2xl mr-3">${data.icon}</span> ${cropName}</h3>
+                    <div class="mb-4"><h4 class="font-semibold text-gray-400">Planting:</h4><p class="text-gray-300">${data.planting}</p></div>
+                    <div><h4 class="font-semibold text-gray-400">Irrigation:</h4><p class="text-gray-300">${data.irrigation}</p></div>`;
+                container.appendChild(card);
+            }
+        };
+
+        const renderLocalPrices = () => {
+            const tableBody = document.getElementById('prices-table-body');
+            tableBody.innerHTML = '';
+            marketPrices.forEach(item => {
+                const row = document.createElement('tr');
+                row.className = "border-b border-gray-700 hover:bg-gray-700";
+                let trendColor = item.trend === 'Up' ? 'text-up' : (item.trend === 'Down' ? 'text-down' : 'text-gray-400');
+                let trendIcon = item.trend === 'Up' ? '▲' : (item.trend === 'Down' ? '▼' : '▬');
+                row.innerHTML = `
+                    <td class="p-3 font-medium text-gray-200">${item.name}</td>
+                    <td class="p-3 text-gray-300">${item.price_per_100kg}</td>
+                    <td class="p-3 ${trendColor} font-semibold">${trendIcon} ${item.trend}</td>`;
+                tableBody.appendChild(row);
+            });
+        };
+
+        const renderValueAddedPrices = () => {
+            const tableBody = document.getElementById('value-added-table-body');
+            tableBody.innerHTML = '';
+            valueAddedPrices.forEach(item => {
+                const row = document.createElement('tr');
+                row.className = "border-b border-gray-700 hover:bg-gray-700";
+                row.innerHTML = `
+                    <td class="p-3 font-medium text-gray-200">${item.product}</td>
+                    <td class="p-3 text-gray-400">${item.source}</td>
+                    <td class="p-3 font-semibold text-gray-200">${item.price}</td>
+                    <td class="p-3 text-gray-400">${item.unit}</td>`;
+                tableBody.appendChild(row);
+            });
+        };
+
+        const renderGlobalPrices = () => {
+            const tableBody = document.getElementById('global-prices-table-body');
+            tableBody.innerHTML = '';
+            globalMarketPrices.forEach(item => {
+                const row = document.createElement('tr');
+                row.className = "border-b border-gray-700 hover:bg-gray-700";
+                row.innerHTML = `
+                    <td class="p-3 font-medium text-gray-200">${item.commodity}</td>
+                    <td class="p-3 font-semibold text-gray-200">${item.price}</td>
+                    <td class="p-3 text-sm text-gray-400">${item.unit}</td>`;
+                tableBody.appendChild(row);
+            });
+        };
+        
+        const renderOrganizations = () => {
+            const container = document.getElementById('orgs-container');
+            container.innerHTML = '';
+            exportOrgs.forEach(org => {
+                const div = document.createElement('div');
+                div.className = "border-l-4 border-green-500 pl-4";
+                div.innerHTML = `<h4 class="font-bold text-gray-200">${org.name}</h4><p class="text-sm text-gray-400">${org.description}</p>`;
+                container.appendChild(div);
+            });
+        };
+
+        const renderShippingTable = () => {
+            const tableBody = document.getElementById('shipping-table-body');
+            tableBody.innerHTML = '';
+            shippingData.forEach(item => {
+                const row = document.createElement('tr');
+                row.className = "border-b border-gray-700 hover:bg-gray-700";
+                row.innerHTML = `
+                    <td class="p-3 font-medium text-gray-200">${item.port}</td>
+                    <td class="p-3 text-gray-400">${item.region}</td>
+                    <td class="p-3 font-semibold text-gray-200">${item.cost}</td>
+                    <td class="p-3 text-gray-400">${item.time}</td>`;
+                tableBody.appendChild(row);
+            });
+        };
+        
+        // --- CHART RENDERERS ---
+        const renderLocalPricesChart = () => {
+            const ctx = document.getElementById('localPricesChart').getContext('2d');
+            const labels = marketPrices.filter(item => item.avg_price > 0).map(item => item.name);
+            const data = marketPrices.filter(item => item.avg_price > 0).map(item => item.avg_price);
             
-            const valueAddedPrices = [
-                { product: "Garri (Ijebu)", source: "Cassava", price: "₦35,000 - ₦40,000", unit: "50kg Bag" },
-                { product: "Fufu Flour", source: "Cassava", price: "₦1,500 - ₦1,800", unit: "1kg" },
-                { product: "Palm Oil", source: "Palm Fruit", price: "₦28,000 - ₦32,000", unit: "25 Litres" },
-                { product: "Palm Kernel Oil", source: "Palm Fruit", price: "₦25,000 - ₦28,000", unit: "25 Litres" },
-                { product: "Groundnut Oil", source: "Groundnuts", price: "₦40,000 - ₦45,000", unit: "25 Litres" },
-                { product: "Kuli-Kuli", source: "Groundnuts", price: "₦1,000 - ₦1,500", unit: "Paint Bucket" },
-                { product: "Bean Flour", source: "Beans", price: "₦2,000 - ₦2,500", unit: "1kg" }
-            ];
-
-            const globalMarketPrices = [
-                { commodity: "Crude Palm Oil", price: "950.00", unit: "per MT (Metric Ton)" },
-                { commodity: "Cocoa", price: "9,850", unit: "per MT (ICE London)" },
-                { commodity: "Groundnuts (Peanuts)", price: "1,900", unit: "per MT (US Runner)" },
-                { commodity: "Corn (Maize)", price: "4.50", unit: "per Bushel (CME)" }
-            ];
-
-            const exportOrgs = [
-                { name: "Nigerian Export Promotion Council (NEPC)", description: "The primary federal agency responsible for promoting the development and diversification of Nigeria's export trade." },
-                { name: "Federation of West African Chambers of Commerce and Industry (FEWACCI)", description: "A regional body that promotes trade, economic cooperation, and regional integration among West African states." },
-                { name: "Cocoa Association of Nigeria (CAN)", description: "Advocates for cocoa farmers and exporters, focusing on quality control, market access, and sustainable practices." },
-                { name: "Oil Palm Growers Association of Nigeria (OPGAN)", description: "Represents the interests of oil palm farmers, supporting them with inputs, training, and market linkages." }
-            ];
-
-            const shippingData = [
-                { port: "Antwerp, Belgium", region: "Europe", cost: "3800-4500", time: "20-30 Days", avg_cost: 4150 },
-                { port: "Rotterdam, Netherlands", region: "Europe", cost: "3800-4600", time: "20-30 Days", avg_cost: 4200 },
-                { port: "Houston, USA", region: "North America", cost: "5500-6500", time: "30-40 Days", avg_cost: 6000 },
-                { port: "Guangzhou, China", region: "Asia", cost: "4200-5000", time: "40-50 Days", avg_cost: 4600 },
-                { port: "Jebel Ali, UAE", region: "Middle East", cost: "3500-4200", time: "25-35 Days", avg_cost: 3850 }
-            ];
-
-
-            // --- DATE & FORECAST ---
-            const dateElement = document.getElementById('current-date');
-            const forecastElement = document.getElementById('forecast-content');
-            const now = new Date();
-            const month = now.getMonth();
-            dateElement.textContent = `Today is ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
-
-            let forecastMessage = "";
-            if (month >= 2 && month <= 6) { forecastMessage = "Primary rainy season. Crucial time for planting and crop establishment."; } 
-            else if (month === 7) { forecastMessage = "'August Break'. Rainfall may be lighter. Monitor crop water needs carefully."; } 
-            else if (month >= 8 && month <= 10) { forecastMessage = "Latter rainy season. Good for late-season planting and preparing for harvest."; } 
-            else { forecastMessage = "Dry season. Irrigation is essential. Focus on harvesting, land prep, and irrigated crops."; }
-            forecastElement.innerHTML = `<p class="bg-blue-900 border-l-4 border-blue-500 text-blue-300 p-4 rounded">${forecastMessage}</p>`;
-
-
-            // --- WEATHER MAP ---
-            const searchBtn = document.getElementById('search-btn');
-            const searchInput = document.getElementById('location-search');
-            const mapFrame = document.getElementById('windy-map');
-            const updateMap = (location) => {
-                const locations = {
-                    'lagos': {lat: 6.5244, lon: 3.3792},
-                    'ibadan': {lat: 7.3776, lon: 3.9470},
-                    'abeokuta': {lat: 7.1577, lon: 3.3435},
-                    'akure': {lat: 7.2526, lon: 5.1931}
-                };
-                const city = location.toLowerCase().trim();
-                if (locations[city]) {
-                    const {lat, lon} = locations[city];
-                    mapFrame.src = `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&detailLat=${lat}&detailLon=${lon}&width=650&height=450&zoom=8&level=surface&overlay=rain&product=ecmwf&menu=&message=true&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1`;
-                } else {
-                    alert("Sorry, only Lagos, Ibadan, Abeokuta, or Akure are supported in this beta, kindly input one of these locations and search for your desired location manually by interacting with the map. Thank you.");
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Avg. Price per 100kg (₦)',
+                        data: data,
+                        borderColor: '#4ade80', // Green-400
+                        backgroundColor: 'rgba(74, 222, 128, 0.2)',
+                        tension: 0.3,
+                        fill: true,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: { color: '#a0aec0' }, // Gray-400
+                            grid: { color: '#4a5568' } // Gray-700
+                        },
+                        x: {
+                            ticks: { color: '#a0aec0' }, // Gray-400
+                            grid: { color: '#4a5568' } // Gray-700
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#a0aec0' } // Gray-400
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += `₦${context.parsed.y.toLocaleString()}`;
+                                    return label;
+                                }
+                            }
+                        }
+                    }
                 }
-            };
-            searchBtn.addEventListener('click', () => updateMap(searchInput.value));
-            searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') updateMap(searchInput.value); });
+            });
+        };
+        
+        const renderShippingCostsChart = () => {
+            const ctx = document.getElementById('shippingCostsChart').getContext('2d');
+            const labels = shippingData.map(item => item.port);
+            const data = shippingData.map(item => item.avg_cost);
 
-
-            // --- DYNAMIC CONTENT RENDERERS ---
-            const renderCropCards = () => {
-                const container = document.getElementById('crop-cards-container');
-                container.innerHTML = ''; // Clear existing content
-                for (const cropName in cropData) {
-                    const data = cropData[cropName];
-                    const card = document.createElement('div');
-                    card.className = "bg-gray-800 p-6 rounded-lg shadow-md transition-transform duration-300 card-hover";
-                    card.innerHTML = `
-                        <h3 class="text-xl font-bold text-green-400 mb-3 flex items-center"><span class="text-2xl mr-3">${data.icon}</span> ${cropName}</h3>
-                        <div class="mb-4"><h4 class="font-semibold text-gray-400">Planting:</h4><p class="text-gray-300">${data.planting}</p></div>
-                        <div><h4 class="font-semibold text-gray-400">Irrigation:</h4><p class="text-gray-300">${data.irrigation}</p></div>`;
-                    container.appendChild(card);
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Estimated Cost (USD)',
+                        data: data,
+                        backgroundColor: [
+                            '#60a5fa', // blue-400
+                            '#818cf8', // indigo-400
+                            '#f87171', // red-400
+                            '#a78bfa', // purple-400
+                            '#fbbf24'  // amber-400
+                        ],
+                        borderColor: [
+                            '#3b82f6',
+                            '#6366f1',
+                            '#ef4444',
+                            '#8b5cf6',
+                            '#f59e0b'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#a0aec0' },
+                            grid: { color: '#4a5568' }
+                        },
+                        x: {
+                            ticks: { color: '#a0aec0' },
+                            grid: { color: '#4a5568' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#a0aec0' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += `$${context.parsed.y.toLocaleString()}`;
+                                    return label;
+                                }
+                            }
+                        }
+                    }
                 }
-            };
+            });
+        };
 
-            const renderLocalPrices = () => {
-                const tableBody = document.getElementById('prices-table-body');
-                tableBody.innerHTML = '';
-                marketPrices.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.className = "border-b border-gray-700 hover:bg-gray-700";
-                    let trendColor = item.trend === 'Up' ? 'text-up' : (item.trend === 'Down' ? 'text-down' : 'text-gray-400');
-                    let trendIcon = item.trend === 'Up' ? '▲' : (item.trend === 'Down' ? '▼' : '▬');
-                    row.innerHTML = `
-                        <td class="p-3 font-medium text-gray-200">${item.name}</td>
-                        <td class="p-3 text-gray-300">${item.price_per_100kg}</td>
-                        <td class="p-3 ${trendColor} font-semibold">${trendIcon} ${item.trend}</td>`;
-                    tableBody.appendChild(row);
-                });
-            };
+        // --- RENDER ALL CONTENT ON PAGE LOAD ---
+        renderCropCards();
+        renderLocalPrices();
+        renderValueAddedPrices();
+        renderGlobalPrices();
+        renderOrganizations();
+        renderShippingTable();
+        renderLocalPricesChart();
+        renderShippingCostsChart();
 
-            const renderValueAddedPrices = () => {
-                const tableBody = document.getElementById('value-added-table-body');
-                tableBody.innerHTML = '';
-                valueAddedPrices.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.className = "border-b border-gray-700 hover:bg-gray-700";
-                    row.innerHTML = `
-                        <td class="p-3 font-medium text-gray-200">${item.product}</td>
-                        <td class="p-3 text-gray-400">${item.source}</td>
-                        <td class="p-3 font-semibold text-gray-200">${item.price}</td>
-                        <td class="p-3 text-gray-400">${item.unit}</td>`;
-                    tableBody.appendChild(row);
-                });
-            };
+        // --- AI Chat Bot Functionality with Gemini API ---
+        const chatBtn = document.getElementById('ai-chat-btn');
+        const chatContainer = document.getElementById('ai-chat-container');
+        const chatCloseBtn = document.getElementById('chat-close-btn');
+        const chatBody = document.getElementById('chat-body');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        
+        // !--- IMPORTANT: Replace 'YOUR_GEMINI_API_KEY' with your actual key ---
+        const GEMINI_API_KEY = "AIzaSyCRsVBB_9Ao88roO9d08_Yg7AhEIRyk_fE";
 
-            const renderGlobalPrices = () => {
-                const tableBody = document.getElementById('global-prices-table-body');
-                tableBody.innerHTML = '';
-                globalMarketPrices.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.className = "border-b border-gray-700 hover:bg-gray-700";
-                    row.innerHTML = `
-                        <td class="p-3 font-medium text-gray-200">${item.commodity}</td>
-                        <td class="p-3 font-semibold text-gray-200">${item.price}</td>
-                        <td class="p-3 text-sm text-gray-400">${item.unit}</td>`;
-                    tableBody.appendChild(row);
-                });
-            };
+        // This function will be the main entry point for sending messages
+        const sendMessage = async (message) => {
+            if (message.trim() === '') return;
+
+            // Display user message
+            addMessageToChat(message, 'user-message');
             
-            const renderOrganizations = () => {
-                const container = document.getElementById('orgs-container');
-                container.innerHTML = '';
-                exportOrgs.forEach(org => {
-                    const div = document.createElement('div');
-                    div.className = "border-l-4 border-green-500 pl-4";
-                    div.innerHTML = `<h4 class="font-bold text-gray-200">${org.name}</h4><p class="text-sm text-gray-400">${org.description}</p>`;
-                    container.appendChild(div);
-                });
-            };
-
-            const renderShippingTable = () => {
-                const tableBody = document.getElementById('shipping-table-body');
-                tableBody.innerHTML = '';
-                shippingData.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.className = "border-b border-gray-700 hover:bg-gray-700";
-                    row.innerHTML = `
-                        <td class="p-3 font-medium text-gray-200">${item.port}</td>
-                        <td class="p-3 text-gray-400">${item.region}</td>
-                        <td class="p-3 font-semibold text-gray-200">${item.cost}</td>
-                        <td class="p-3 text-gray-400">${item.time}</td>`;
-                    tableBody.appendChild(row);
-                });
-            };
+            // Show typing indicator
+            const typingIndicator = addTypingIndicator();
             
-            // --- CHART RENDERERS ---
-            const renderLocalPricesChart = () => {
-                const ctx = document.getElementById('localPricesChart').getContext('2d');
-                const labels = marketPrices.filter(item => item.avg_price > 0).map(item => item.name);
-                const data = marketPrices.filter(item => item.avg_price > 0).map(item => item.avg_price);
+            // Prepare and send request to Gemini API
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [
+                            {
+                                parts: [
+                                    {
+                                        text: `You are a friendly and knowledgeable FarmWise AI Assistant for a Nigerian farming dashboard. Your purpose is to provide helpful, concise, and relevant information to farmers and agricultural enthusiasts, specifically related to Nigerian crops, weather, market prices, and farming practices. Maintain a positive, clear, and encouraging tone. Here is the user's query: ${message}`
+                                    }
+                                ]
+                            }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
                 
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Avg. Price per 100kg (₦)',
-                            data: data,
-                            borderColor: '#4ade80', // Green-400
-                            backgroundColor: 'rgba(74, 222, 128, 0.2)',
-                            tension: 0.3,
-                            fill: true,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: false,
-                                ticks: { color: '#a0aec0' }, // Gray-400
-                                grid: { color: '#4a5568' } // Gray-700
-                            },
-                            x: {
-                                ticks: { color: '#a0aec0' }, // Gray-400
-                                grid: { color: '#4a5568' } // Gray-700
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                labels: { color: '#a0aec0' } // Gray-400
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        let label = context.dataset.label || '';
-                                        if (label) {
-                                            label += ': ';
-                                        }
-                                        label += `₦${context.parsed.y.toLocaleString()}`;
-                                        return label;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            };
-            
-            const renderShippingCostsChart = () => {
-                const ctx = document.getElementById('shippingCostsChart').getContext('2d');
-                const labels = shippingData.map(item => item.port);
-                const data = shippingData.map(item => item.avg_cost);
+                // Extract and display the AI's response
+                const aiResponse = data.candidates[0].content.parts[0].text;
+                removeTypingIndicator(typingIndicator);
+                addMessageToChat(aiResponse, 'ai-message');
+                
+            } catch (error) {
+                console.error("Error fetching from Gemini API:", error);
+                removeTypingIndicator(typingIndicator);
+                addMessageToChat("I'm sorry, I'm having trouble connecting right now. Please try again later.", 'ai-message');
+            }
+        };
 
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Estimated Cost (USD)',
-                            data: data,
-                            backgroundColor: [
-                                '#60a5fa', // blue-400
-                                '#818cf8', // indigo-400
-                                '#f87171', // red-400
-                                '#a78bfa', // purple-400
-                                '#fbbf24'  // amber-400
-                            ],
-                            borderColor: [
-                                '#3b82f6',
-                                '#6366f1',
-                                '#ef4444',
-                                '#8b5cf6',
-                                '#f59e0b'
-                            ],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: { color: '#a0aec0' },
-                                grid: { color: '#4a5568' }
-                            },
-                            x: {
-                                ticks: { color: '#a0aec0' },
-                                grid: { color: '#4a5568' }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                labels: { color: '#a0aec0' }
-                            },
-                             tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        let label = context.dataset.label || '';
-                                        if (label) {
-                                            label += ': ';
-                                        }
-                                        label += `$${context.parsed.y.toLocaleString()}`;
-                                        return label;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            };
+        const addMessageToChat = (text, type) => {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `<p>${text}</p>`;
+            chatBody.appendChild(messageDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        };
 
-            // --- INITIALIZE ALL RENDERERS ON PAGE LOAD ---
-            renderCropCards();
-            renderLocalPrices();
-            renderValueAddedPrices();
-            renderGlobalPrices();
-            renderOrganizations();
-            renderShippingTable();
-            renderLocalPricesChart();
-            renderShippingCostsChart();
+        const addTypingIndicator = () => {
+            const indicatorDiv = document.createElement('div');
+            indicatorDiv.className = 'message ai-message typing-indicator';
+            indicatorDiv.innerHTML = `<p><span>.</span><span>.</span><span>.</span></p>`;
+            chatBody.appendChild(indicatorDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+            return indicatorDiv;
+        };
+
+        const removeTypingIndicator = (indicator) => {
+            if (indicator) {
+                indicator.remove();
+            }
+        };
+
+        chatBtn.addEventListener('click', () => {
+            chatContainer.style.display = 'flex';
         });
-    </script>
+
+        chatCloseBtn.addEventListener('click', () => {
+            chatContainer.style.display = 'none';
+        });
+
+        chatSendBtn.addEventListener('click', () => {
+            sendMessage(chatInput.value);
+            chatInput.value = '';
+        });
+
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage(chatInput.value);
+                chatInput.value = '';
+            }
+        });
+    });
+    // --- AI Chat Bot Functionality with Gemini API ---
+const chatBtn = document.getElementById('ai-chat-btn');
+const chatContainer = document.getElementById('ai-chat-container');
+const chatCloseBtn = document.getElementById('chat-close-btn');
+const chatBody = document.getElementById('chat-body');
+const chatInput = document.getElementById('chat-input');
+const chatSendBtn = document.getElementById('chat-send-btn');
+
+// Replace with your actual API key
+const API_KEY = "AIzaSyCRsVBB_9Ao88roO9d08_Yg7AhEIRyk_fE";
+const API_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=AIzaSyCRsVBB_9Ao88roO9d08_Yg7AhEIRyk" + API_KEY;
+
+// Toggle chat window visibility
+chatBtn.addEventListener('click', () => {
+    chatContainer.style.display = 'flex';
+});
+
+chatCloseBtn.addEventListener('click', () => {
+    chatContainer.style.display = 'none';
+});
+
+// Function to add a message to the chat
+const addMessage = (message, sender) => {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}-message`;
+    messageDiv.innerHTML = `<p>${message}</p>`;
+    chatBody.appendChild(messageDiv);
+    chatBody.scrollTop = chatBody.scrollHeight;
+};
+
+// Function to handle user input and send to API
+const sendMessage = async () => {
+    const userMessage = chatInput.value.trim();
+    if (userMessage === "") return;
+
+    // Display user message
+    addMessage(userMessage, 'user');
+    chatInput.value = '';
+
+    // Display typing indicator
+    const typingIndicator = document.createElement('div');
+    typingIndicator.className = 'ai-message typing-indicator';
+    typingIndicator.innerHTML = '<p><span>.</span><span>.</span><span>.</span></p>';
+    chatBody.appendChild(typingIndicator);
+    chatBody.scrollTop = chatBody.scrollHeight;
+
+    try {
+        const response = await fetch(API_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{ text: userMessage }]
+                }]
+            }),
+        });
+
+        const result = await response.json();
+        const aiResponse = result.candidates[0].content.parts[0].text;
+
+        // Remove typing indicator and display AI response
+        chatBody.removeChild(typingIndicator);
+        addMessage(aiResponse, 'ai');
+
+    } catch (error) {
+        console.error('API Error:', error);
+        chatBody.removeChild(typingIndicator);
+        addMessage("Sorry, I'm having trouble connecting right now. Please try again later.", 'ai');
+    }
+};
+
+// Send message on button click or Enter key press
+chatSendBtn.addEventListener('click', sendMessage);
+chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
+</script>
 </body>
 </html>
